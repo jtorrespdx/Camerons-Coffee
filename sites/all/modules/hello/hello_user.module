@@ -1,0 +1,24 @@
+<?php
+
+function hello_user_menu() {
+  $items = array();
+  $items['success'] = array(
+          'title' => "Success",
+          'page callback' => 'success_display',
+          'access callback' => TRUE,
+          'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function success_display()
+{
+    return '
+          <h3>User added successfully!</h3>
+    ';
+}
+
+function hello_user_insert() {
+  $_GET['destination'] = 'success';
+
+}

@@ -1,0 +1,99 @@
+<?php
+
+function queen_attack_menu() {
+    $items = array();
+    $items['queen_attack'] = array(
+            'title' => 'Queen Attack',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('queen_attack_form'),
+            'access callback' => TRUE,
+            'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['queen_attack_success_page'] = array(
+            'title' => 'Success',
+            'page callback' => 'queen_attack_success',
+            'access callback' => TRUE,
+            'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+
+function queen_attack_form() {
+    $form['queen_file_position'] = array(
+    '#title' => 'Queen File Location',
+    '#type' => 'textfield',
+    '#description' => t('Please enter the queen\'s file (column).'),
+    '#element_validate' => array('element_validate_integer_positive', 'element_validate_ambit'),
+    '#required' => TRUE,
+    );
+
+    $form['queen_rank_position'] = array(
+    '#title' => 'Queen Rank Location',
+    '#type' => 'textfield',
+    '#description' => t('Please enter the queen\'s rank (row).'),
+    '#element_validate' => array('element_validate_integer_positive', 'element_validate_ambit'),
+    '#required' => TRUE,
+    );
+
+    $form['player_file_position'] = array(
+    '#title' => 'Player File Location',
+    '#type' => 'textfield',
+    '#description' => t('Please enter the player\'s file (column).'),
+    '#element_validate' => array('element_validate_integer_positive', 'element_validate_ambit'),
+    '#required' => TRUE,
+    );
+
+    $form['player_rank_position'] = array(
+    '#title' => 'Player Rank Location',
+    '#type' => 'textfield',
+    '#description' => t('Please enter the player\'s rank (row).'),
+    '#element_validate' => array('element_validate_integer_positive', 'element_validate_ambit'),
+    '#required' => TRUE,
+    );
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Check',
+    );
+
+    return $form;
+}
+
+function element_validate_ambit($element) {
+    if($element['#value'] > 8 || $element['#value'] < 1) {
+        form_error($element, t('Rows numbers are only 1-8.'));
+    }
+}
+
+function queen_attack_form_validate($form, &$form_state) {
+    if (($form_state['values']['queen_file_position'] == $form_state['values']['player_file_position']) && ($form_state['values']['queen_file_position'] == $form_state['values']['player_file_position'])) {
+        form_set_error('queen_file_position', 'You can\'t have the pieces on the same space silly!');
+    }
+}
+
+function queen_attack_form_submit($form, &$form_state) {
+    $queen_file = $form_state['values']['queen_file_position'];
+    $queen_rank = $form_state['values']['queen_rank_position']+1;
+    $player_file = $form_state['values']['player_file_position'];
+    $player_rank = $form_state['values']['player_rank_position']+1;
+    $file_diff = abs($queen_file - $player_file);
+    $rank_diff = abs($queen_rank - $player_rank);
+    $queen_success = '';
+
+    if ($queen_file == $player_file || $queen_rank == $player_rank) {
+        $queen_success = 'Oh No!! The Blood Queen has gotten you adventurer.';
+    } elseif ($file_diff == $rank_diff) {
+        $queen_success = 'Queen wins.';
+    } else {
+        $queen_success = 'Queen does not win, yet.';
+    }
+
+    $_SESSION['queen_success_output'] = $queen_success;
+    $form_state['redirect'] = 'queen_attack_success_page';
+}
+
+function queen_attack_success() {
+    $output = $_SESSION['queen_success_output'];
+    return "$output";
+}
